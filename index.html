@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Graviton Stars · neon</title>
+<style>
+  :root{
+    --void:#04050b; --ink:#eaf2ff; --mute:#8088aa;
+    --cyan:#22e0ff; --gold:#ffd34d; --rose:#ff2d6e;
+    --panel:rgba(8,10,22,.66); --line:rgba(130,150,220,.16);
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace; --disp:system-ui,-apple-system,Segoe UI,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--void);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block;touch-action:none}
+  .titlebar{position:fixed;top:14px;left:0;right:0;text-align:center;pointer-events:none;z-index:3}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--mute)}
+  h1{margin:.14em 0 0;font-family:var(--disp);font-size:clamp(20px,3vw,34px);font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#fff;
+     text-shadow:0 0 22px rgba(176,38,255,.45),0 0 40px rgba(34,224,255,.25)}
+  .dash{position:fixed;top:14px;left:14px;width:282px;max-width:calc(100vw - 28px);max-height:calc(100vh - 28px);overflow-y:auto;z-index:4;
+    background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(15px) saturate(1.4);-webkit-backdrop-filter:blur(15px) saturate(1.4);box-shadow:0 18px 60px rgba(0,0,0,.6)}
+  .dash h2{margin:0 0 9px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);font-weight:600}
+  .star{border:1px solid var(--line);border-radius:11px;padding:8px 9px 9px;margin:0 0 8px;--acc:#fff;box-shadow:inset 0 0 18px rgba(0,0,0,.3)}
+  .srow{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc),0 0 18px var(--acc);flex:0 0 auto}
+  .sname{font-weight:700;font-size:12.5px}
+  .scoord{font-family:var(--mono);font-size:10px;color:var(--mute)}
+  .srs{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--acc);text-shadow:0 0 8px var(--acc)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:99px;margin:5px 0 0;outline:none;cursor:pointer;background:linear-gradient(90deg,#1c2240,var(--acc))}
+  input[type=range].plain{background:#1c2240}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--acc);box-shadow:0 0 14px var(--acc);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--acc);box-shadow:0 0 14px var(--acc);cursor:pointer}
+  input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid #fff;outline-offset:2px}
+  .glob{--acc:var(--cyan)}
+  .ctl{margin:10px 0 0}.ctl .row{display:flex;justify-content:space-between;align-items:baseline}
+  .ctl .lab{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}.ctl .v{font-family:var(--mono);font-size:11px;color:var(--ink)}
+  .btns{display:flex;gap:6px;margin-top:12px}
+  button{flex:1;font:inherit;font-size:12px;font-weight:600;color:var(--ink);background:rgba(28,36,64,.7);border:1px solid var(--line);border-radius:9px;padding:8px 4px;cursor:pointer;transition:.14s}
+  button:hover{border-color:var(--cyan);background:rgba(38,50,90,.8)}button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}button.on{border-color:var(--cyan);color:var(--cyan)}
+  .toggles{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.toggles button{flex:0 1 auto;padding:5px 9px;font-size:11px;border-radius:8px}
+  .read{position:fixed;top:14px;right:14px;width:212px;max-width:calc(100vw - 28px);z-index:4;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:13px;backdrop-filter:blur(15px) saturate(1.4);-webkit-backdrop-filter:blur(15px) saturate(1.4);box-shadow:0 18px 60px rgba(0,0,0,.6);font-family:var(--mono)}
+  .read h2{margin:0 0 8px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);font-weight:600}
+  .read .r{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(130,150,220,.08)}.read .r .k{color:var(--mute)}
+  .read .note{margin-top:8px;font-size:10px;color:var(--mute);line-height:1.4}
+  .hint{position:fixed;bottom:11px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:10.5px;color:var(--mute);pointer-events:none;z-index:3}
+  @media (max-width:790px){ .read{top:auto;bottom:40px;right:14px;width:184px} }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="titlebar"><div class="eyebrow">paczyński–wiita field · neon emission</div><h1>Graviton Stars</h1></div>
+
+<div class="dash" id="dash">
+  <h2>Star gravity · individual</h2><div id="starCtls"></div>
+  <h2 style="margin-top:13px">System</h2>
+  <div class="ctl glob"><div class="row"><span class="lab">Emitted matter</span><span class="v" id="pNum">200</span></div><input id="parts" class="plain" type="range" min="40" max="420" step="10" value="200"></div>
+  <div class="ctl glob"><div class="row"><span class="lab">Time flow</span><span class="v" id="tNum">7.0×</span></div><input id="time" class="plain" type="range" min="0" max="18" step="0.5" value="7"></div>
+  <div class="ctl glob"><div class="row"><span class="lab">Light speed c²</span><span class="v" id="cNum">4000</span></div><input id="cc" class="plain" type="range" min="1500" max="12000" step="100" value="4000"></div>
+  <div class="btns"><button id="pause">Pause</button><button id="reset">Reset</button></div>
+  <div class="toggles"><button id="tGrid" class="on">Grid</button><button id="tRings" class="on">GR rings</button><button id="tLens" class="on">Lensing</button><button id="tTrail" class="on">Trails</button></div>
+</div>
+
+<div class="read">
+  <h2>System · model units</h2>
+  <div class="r"><span class="k">Total GM</span><span id="oGM">—</span></div>
+  <div class="r"><span class="k">Black holes</span><span id="oBH">—</span></div>
+  <div class="r"><span class="k">In field</span><span id="oAct">—</span></div>
+  <div class="r"><span class="k">Swallowed</span><span id="oSw">—</span></div>
+  <div class="r"><span class="k">Escaped</span><span id="oEs">—</span></div>
+  <div class="note">rings: <span style="color:var(--rose)">horizon r_s</span> · <span style="color:var(--gold)">photon 1.5</span> · <span style="color:var(--cyan)">ISCO 3 r_s</span>. orbits precess (PW).</div>
+</div>
+
+<div class="hint">each slider collapses one star · matter is emitted in each star's color · click to inject</div>
+
+<script>/*__CORE_START__*/
+// Graviton-stars physics core. Paczynski-Wiita pseudo-Newtonian potential:
+//   Phi = -GM/(r - r_s)   ->   |a| = GM/(r - r_s)^2
+// Reproduces Schwarzschild ISCO at 3*r_s and prograde perihelion precession.
+// Pure + deterministic. The SAME bytes run in the browser and in audit.js.
+(function (root) {
+  "use strict";
+  var EPS = 0.6;        // capture margin outside the horizon (numerics)
+  var A_MAX = 6000;     // acceleration clamp near the horizon
+  var D = 210;          // cross arm length (world units)
+
+  // neon five: core purple, E red, W blue, N yellow, S green
+  var STAR_DEF = [
+    { name: "Core",  coord: "(0,0)",   x: 0,  y: 0,   g: 30, color: "#b026ff", spin: 1 },
+    { name: "East",  coord: "(+10,0)", x: D,  y: 0,   g: 18, color: "#ff1f4f", spin: 1 },
+    { name: "West",  coord: "(-10,0)", x: -D, y: 0,   g: 18, color: "#2b6bff", spin: -1 },
+    { name: "North", coord: "(0,+10)", x: 0,  y: -D,  g: 18, color: "#ffe600", spin: -1 },
+    { name: "South", coord: "(0,-10)", x: 0,  y: D,   g: 18, color: "#2bff6a", spin: 1 }
+  ];
+
+  function rsOf(gm, c2) { return 2 * gm / c2; }     // Schwarzschild radius
+  function iscoOf(rs)   { return 3 * rs; }          // PW ISCO = 6GM/c^2 = 3 r_s
+  function mboOf(rs)    { return 2 * rs; }          // marginally bound orbit
+  function photonOf(rs) { return 1.5 * rs; }        // null photon sphere (marker)
+  function vCircPW(gm, r, rs) { return Math.sqrt(gm * r) / (r - rs); } // circular-orbit speed, r>rs
+
+  // multi-star Paczynski-Wiita acceleration. returns [ax, ay, capturedStarIndex|-1]
+  function accel(px, py, stars) {
+    var ax = 0, ay = 0, cap = -1;
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      var dx = s.x - px, dy = s.y - py;
+      var d = Math.sqrt(dx * dx + dy * dy); if (d < 1e-6) d = 1e-6;
+      var gap = d - s.rs;
+      if (gap <= EPS) { cap = i; continue; }   // fell through the horizon
+      var am = s.gm / (gap * gap); if (am > A_MAX) am = A_MAX;
+      ax += am * dx / d; ay += am * dy / d;
+    }
+    return [ax, ay, cap];
+  }
+
+  // velocity-Verlet (symplectic) step; returns captured star index or -1
+  function step(p, stars, dt) {
+    var a = accel(p.x, p.y, stars); if (a[2] >= 0) return a[2];
+    p.vx += a[0] * dt * 0.5; p.vy += a[1] * dt * 0.5;
+    p.x += p.vx * dt; p.y += p.vy * dt;
+    var b = accel(p.x, p.y, stars); if (b[2] >= 0) return b[2];
+    p.vx += b[0] * dt * 0.5; p.vy += b[1] * dt * 0.5;
+    return -1;
+  }
+
+  // PW specific energy for a single star at origin (audit: conservation)
+  function energyPW(p, gm, rs) {
+    var r = Math.hypot(p.x, p.y);
+    return 0.5 * (p.vx * p.vx + p.vy * p.vy) - gm / (r - rs);
+  }
+
+  var API = {
+    EPS: EPS, A_MAX: A_MAX, D: D, STAR_DEF: STAR_DEF,
+    rsOf: rsOf, iscoOf: iscoOf, mboOf: mboOf, photonOf: photonOf, vCircPW: vCircPW,
+    accel: accel, step: step, energyPW: energyPW
+  };
+  if (typeof module !== "undefined" && module.exports) module.exports = API;
+  root.CORE = API;
+})(typeof globalThis !== "undefined" ? globalThis : this);
+/*__CORE_END__*/</script>
+<script>
+"use strict";
+const cv=document.getElementById("c"), ctx=cv.getContext("2d"), $=id=>document.getElementById(id);
+const reduce=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+let W=0,H=0,DPR=1,cx=0,cy=0,scale=1;
+const TILT=1.06, sinT=Math.sin(TILT), cosT=Math.cos(TILT);
+const GRID_R=300, NSUB=3, TRAIL=16;
+let budget=200, TS=7, c2=4000;
+let showGrid=true, showRings=true, showLens=true, trails=true, paused=false;
+let stars=[], particles=[], starsBG=[], swallowed=0, escaped=0, emitIdx=0;
+
+function hexA(h,a){ const n=parseInt(h.slice(1),16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; }
+function syncStar(s){ s.gm=s.g*800; s.rs=CORE.rsOf(s.gm,c2); }
+function coreR(s){ return 5+s.g*0.10; }
+
+function depthAt(x,y){ let d=0;
+  for(const s of stars){ const dd=Math.hypot(x-s.x,y-s.y), gap=Math.max(dd-s.rs,2.5); d+=Math.min(0.006*s.gm/gap,110); }
+  return Math.min(d,240);
+}
+function project(x,y){ const d=depthAt(x,y); return [cx+x*scale, cy+(y*cosT+d*sinT)*scale]; }
+function screenToWorld(mx,my){ return [(mx-cx)/scale,(my-cy)/scale/cosT]; }
+function totalGM(){ let t=0; for(const s of stars) t+=s.gm; return t; }
+
+function emit(){
+  const s=stars[emitIdx % stars.length]; emitIdx++;
+  if(s.gm<=0) return;
+  const r0=Math.max(3.3*s.rs, coreR(s)+10), a=Math.random()*6.283, ca=Math.cos(a), sa=Math.sin(a);
+  const vc=CORE.vCircPW(s.gm,r0,s.rs), f=0.72+Math.random()*0.4;
+  particles.push({ x:s.x+ca*r0, y:s.y+sa*r0, vx:(-sa)*vc*f*s.spin+ca*vc*0.12, vy:(ca)*vc*f*s.spin+sa*vc*0.12, color:s.color, trail:[] });
+}
+function resetSim(){ particles=[]; swallowed=0; escaped=0; emitIdx=0; }
+
+function physics(simDt){
+  const sub=simDt/NSUB, rEsc=GRID_R*1.75;
+  for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; let dead=false;
+    for(let k=0;k<NSUB;k++){ const cap=CORE.step(p,stars,sub); if(cap>=0){ swallowed++; particles.splice(i,1); dead=true; break; } }
+    if(dead) continue;
+    if(trails){ p.trail.push(p.x,p.y); if(p.trail.length>TRAIL*2) p.trail.splice(0,2); }
+    if(Math.hypot(p.x,p.y)>rEsc){ escaped++; particles.splice(i,1); }
+  }
+  let e=0; while(particles.length<budget && e<7){ emit(); e++; }
+}
+
+function makeBG(){ starsBG=[]; const n=reduce?70:150; for(let i=0;i<n;i++) starsBG.push({ax:Math.random(),ay:Math.random(),m:0.3+Math.random()*0.9,tw:Math.random()*6.28}); }
+function ramp(t){ t=Math.max(0,Math.min(1,t));
+  const st=[[0,[70,110,170,.13]],[.45,[40,200,255,.3]],[.78,[160,80,255,.46]],[1,[255,60,150,.68]]];
+  for(let i=0;i<st.length-1;i++){ const a=st[i],b=st[i+1]; if(t>=a[0]&&t<=b[0]){ const f=(t-a[0])/(b[0]-a[0]||1),c=a[1],d=b[1];
+    return `rgba(${c[0]+(d[0]-c[0])*f|0},${c[1]+(d[1]-c[1])*f|0},${c[2]+(d[2]-c[2])*f|0},${(c[3]+(d[3]-c[3])*f).toFixed(3)})`; } }
+  return "rgba(255,60,150,.68)"; }
+
+const GN=26, gx=[]; for(let i=0;i<=GN;i++) gx.push(-GRID_R+2*GRID_R*i/GN);
+function drawGrid(){
+  for(let j=0;j<gx.length;j++){ ctx.beginPath(); let md=0; for(let i=0;i<gx.length;i++){ const d=depthAt(gx[i],gx[j]); if(d>md)md=d; const [sx,sy]=project(gx[i],gx[j]); i?ctx.lineTo(sx,sy):ctx.moveTo(sx,sy);} ctx.lineWidth=1; ctx.strokeStyle=ramp(md/120); ctx.stroke(); }
+  for(let i=0;i<gx.length;i++){ ctx.beginPath(); let md=0; for(let j=0;j<gx.length;j++){ const d=depthAt(gx[i],gx[j]); if(d>md)md=d; const [sx,sy]=project(gx[i],gx[j]); j?ctx.lineTo(sx,sy):ctx.moveTo(sx,sy);} ctx.lineWidth=1; ctx.strokeStyle=ramp(md/120); ctx.stroke(); }
+}
+const NA=40, ang=[]; for(let i=0;i<=NA;i++) ang.push(i/NA*6.283);
+function ringAround(s,rW,color,w){ if(rW<3) return; ctx.beginPath(); for(let k=0;k<ang.length;k++){ const [sx,sy]=project(s.x+rW*Math.cos(ang[k]), s.y+rW*Math.sin(ang[k])); k?ctx.lineTo(sx,sy):ctx.moveTo(sx,sy);} ctx.closePath(); ctx.lineWidth=w; ctx.strokeStyle=color; ctx.save(); ctx.shadowColor=color; ctx.shadowBlur=10; ctx.stroke(); ctx.restore(); }
+
+function drawBG(){ const g=totalGM(), [bx,by]=project(0,0);
+  for(const s of starsBG){ let px=s.ax*W, py=s.ay*H, dx=px-bx, dy=py-by, b=Math.hypot(dx,dy)||1;
+    if(showLens){ const defl=Math.min(b*0.7, 9000*g/(c2*(b+40))); px=bx+dx/b*(b+defl); py=by+dy/b*(b+defl); }
+    let a=s.m*0.55; if(!reduce){ s.tw+=0.03; a*=.65+0.35*Math.sin(s.tw);} ctx.fillStyle=`rgba(200,220,255,${a.toFixed(3)})`; ctx.fillRect(px,py,s.m>0.9?1.6:1,s.m>0.9?1.6:1); }
+}
+function drawParticles(){ ctx.globalCompositeOperation="lighter";
+  for(const p of particles){
+    if(trails && p.trail.length>=4){ ctx.beginPath(); for(let i=0;i<p.trail.length;i+=2){ const [sx,sy]=project(p.trail[i],p.trail[i+1]); i?ctx.lineTo(sx,sy):ctx.moveTo(sx,sy);} ctx.lineWidth=1; ctx.strokeStyle=hexA(p.color,.16); ctx.stroke(); }
+    const [sx,sy]=project(p.x,p.y), sp=Math.min(1,Math.hypot(p.vx,p.vy)/130), r=1.5+sp*1.4;
+    const grd=ctx.createRadialGradient(sx,sy,0,sx,sy,r*3); grd.addColorStop(0,"rgba(255,255,255,.95)"); grd.addColorStop(.35,hexA(p.color,.85)); grd.addColorStop(1,hexA(p.color,0));
+    ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(sx,sy,r*3,0,6.28); ctx.fill();
+  }
+  ctx.globalCompositeOperation="source-over";
+}
+function drawStar(s){ const [sx,sy]=project(s.x,s.y), rsPx=s.rs*scale, isBH=rsPx>5;
+  ctx.globalCompositeOperation="lighter";
+  const halo=Math.max(24,rsPx*3.0), g=ctx.createRadialGradient(sx,sy,0,sx,sy,halo);
+  if(isBH){ g.addColorStop(0,hexA(s.color,0)); g.addColorStop(.6,hexA(s.color,.5)); g.addColorStop(.74,hexA(s.color,.85)); g.addColorStop(.82,hexA(s.color,.2)); g.addColorStop(1,hexA(s.color,0)); }
+  else { g.addColorStop(0,"rgba(255,255,255,.95)"); g.addColorStop(.3,hexA(s.color,.9)); g.addColorStop(.65,hexA(s.color,.2)); g.addColorStop(1,hexA(s.color,0)); }
+  ctx.globalAlpha=isBH?0.65:0.55; ctx.fillStyle=g; ctx.beginPath(); ctx.arc(sx,sy,halo,0,6.28); ctx.fill(); ctx.globalAlpha=1; ctx.globalCompositeOperation="source-over";
+  if(isBH){ ctx.save(); ctx.shadowColor=s.color; ctx.shadowBlur=16; ctx.strokeStyle=s.color; ctx.lineWidth=2.4; ctx.beginPath(); ctx.ellipse(sx,sy,1.5*rsPx,1.5*rsPx*cosT,0,0,6.28); ctx.stroke(); ctx.restore();
+    ctx.fillStyle="#000"; ctx.beginPath(); ctx.ellipse(sx,sy,rsPx,rsPx*cosT,0,0,6.28); ctx.fill(); }
+  else { const rc=coreR(s); ctx.globalCompositeOperation="lighter"; const cg=ctx.createRadialGradient(sx,sy,0,sx,sy,rc*2.2); cg.addColorStop(0,"#fff"); cg.addColorStop(.5,s.color); cg.addColorStop(1,hexA(s.color,0)); ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(sx,sy,rc*2.2,0,6.28); ctx.fill(); ctx.globalCompositeOperation="source-over"; }
+}
+function background(){ ctx.fillStyle="#04050b"; ctx.fillRect(0,0,W,H);
+  const neb=ctx.createRadialGradient(W*0.5,H*0.42,0,W*0.5,H*0.42,Math.max(W,H)*0.72); neb.addColorStop(0,"rgba(48,24,96,.3)"); neb.addColorStop(.5,"rgba(20,16,52,.15)"); neb.addColorStop(1,"rgba(4,5,11,0)"); ctx.fillStyle=neb; ctx.fillRect(0,0,W,H); }
+
+function frame(){ background(); drawBG();
+  if(showGrid) drawGrid();
+  if(showRings) for(const s of stars){ if(s.rs*scale>4){ ringAround(s,CORE.iscoOf(s.rs),"rgba(34,224,255,.55)",1.2); ringAround(s,CORE.photonOf(s.rs),"rgba(255,211,77,.85)",1.4); ringAround(s,s.rs,"rgba(255,45,110,.95)",1.7); } }
+  drawParticles(); for(const s of stars) drawStar(s);
+}
+let last=performance.now();
+function loop(now){ const dt=Math.min(0.05,(now-last)/1000); last=now; if(!paused) physics(dt*TS); frame(); readout(); requestAnimationFrame(loop); }
+function readout(){ let bh=0; for(const s of stars) if(s.rs*scale>5) bh++; $("oGM").textContent=totalGM(); $("oBH").textContent=bh; $("oAct").textContent=particles.length; $("oSw").textContent=swallowed; $("oEs").textContent=escaped;
+  for(const s of stars){ const e=$("rs-"+s.name); if(e) e.textContent="r_s "+s.rs.toFixed(1); } }
+function resize(){ DPR=Math.min(2,window.devicePixelRatio||1); W=innerWidth; H=innerHeight; cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); cx=W*0.5; cy=H*0.40; scale=0.40*Math.min(W,H)/GRID_R; }
+addEventListener("resize",resize);
+
+function buildCtls(){ stars=CORE.STAR_DEF.map(d=>({...d})); stars.forEach(syncStar);
+  const wrap=$("starCtls"); wrap.innerHTML="";
+  stars.forEach((s,i)=>{ const card=document.createElement("div"); card.className="star"; card.style.setProperty("--acc",s.color);
+    card.innerHTML=`<div class="srow"><span class="dot"></span><span class="sname">${s.name}</span><span class="scoord">${s.coord}</span><span class="srs" id="rs-${s.name}">r_s ${s.rs.toFixed(1)}</span></div><input type="range" min="0" max="100" step="1" value="${s.g}" id="g-${i}">`;
+    wrap.appendChild(card); card.querySelector("#g-"+i).oninput=e=>{ s.g=+e.target.value; syncStar(s); };
+  });
+}
+$("parts").oninput=e=>{ budget=+e.target.value; $("pNum").textContent=budget; };
+$("time").oninput=e=>{ TS=+e.target.value; $("tNum").textContent=TS.toFixed(1)+"×"; };
+$("cc").oninput=e=>{ c2=+e.target.value; $("cNum").textContent=c2; stars.forEach(syncStar); };
+$("pause").onclick=e=>{ paused=!paused; e.target.textContent=paused?"Play":"Pause"; e.target.classList.toggle("on",paused); };
+$("reset").onclick=resetSim;
+function tgl(id,fn){ const b=$(id); b.onclick=()=>b.classList.toggle("on",fn()); }
+tgl("tGrid",()=>showGrid=!showGrid); tgl("tRings",()=>showRings=!showRings); tgl("tLens",()=>showLens=!showLens); tgl("tTrail",()=>{ trails=!trails; if(!trails) particles.forEach(p=>p.trail=[]); return trails; });
+cv.addEventListener("pointerdown",e=>{ const w=screenToWorld(e.clientX,e.clientY); if(Math.hypot(w[0],w[1])<GRID_R){ // inject neutral white tracers at click
+  for(let n=0;n<8;n++){ const a=Math.random()*6.283; particles.push({x:w[0],y:w[1],vx:Math.cos(a)*20,vy:Math.sin(a)*20,color:"#ffffff",trail:[]}); } } });
+
+resize(); buildCtls(); makeBG(); resetSim(); $("tNum").textContent=TS.toFixed(1)+"×"; requestAnimationFrame(loop);
+</script>
+</body>
+</html>
