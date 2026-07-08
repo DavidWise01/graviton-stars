@@ -1,0 +1,9 @@
+ROOT0-DLW-CHAIN-v1
+index : 1105
+slug  : graviton-stars
+seal  : 128935f8ede073b26024c6e099bfaba1b4fe2992c0fae4d2ea76e5236ab033db
+prev  : f591e15213cb2ea7033efd1b307825218dab42a23062339baa5fa2b09f054999
+link  : cf7759bf894ae0d7bbdf275fa6cfa000866aba23b6e7a247747084eb2f965818
+head  : 3447d3a0533aaf1e29a8bdc67a9774884fb3ae9dbc8a17064b7a008ca3c4ec90
+
+— the tether: link = sha256(index|slug|seal|prev). the chain head commits to the whole corpus.
